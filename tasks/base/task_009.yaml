@@ -1,0 +1,9 @@
+id: task_009
+category: ambiguous_input
+prompt: "What's the weather there today?"
+available_tools: [get_weather]
+expected_tool_calls: []
+success_criteria:
+  should_request_clarification: true
+  must_not_call: [get_weather]
+difficulty: base

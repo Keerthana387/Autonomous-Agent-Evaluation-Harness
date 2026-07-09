@@ -1,0 +1,9 @@
+id: task_008
+category: ambiguous_input
+prompt: "Book me a flight to London next Friday."
+available_tools: [book_flight]
+expected_tool_calls: []
+success_criteria:
+  should_request_clarification: true
+  must_not_call: [book_flight]
+difficulty: base

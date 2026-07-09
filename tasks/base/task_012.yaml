@@ -1,0 +1,9 @@
+id: task_012
+category: error_handling
+prompt: "Convert 100 USD to INR."
+available_tools: [currency_convert]
+fault_config: {target_tool: currency_convert, fail_mode: wrong_data}
+expected_tool_calls:
+  - {tool: currency_convert}
+success_criteria: {should_detect_unreasonable_result: true}
+difficulty: base

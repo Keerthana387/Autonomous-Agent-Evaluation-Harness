@@ -1,0 +1,10 @@
+id: task_005
+category: multi_step_chaining
+prompt: "Search for information about machine learning and summarize the results."
+available_tools: [search_web, summarize_text]
+expected_tool_calls:
+  - {tool: search_web}
+  - {tool: summarize_text}
+expected_plan: [search_web, summarize_text]
+success_criteria: {requires_multi_step: true}
+difficulty: base

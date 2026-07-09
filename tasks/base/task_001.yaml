@@ -1,0 +1,12 @@
+id: task_001
+category: tool_selection
+prompt: "What is the current weather in Mumbai?"
+available_tools: [get_weather, translate_text, calculator]
+expected_tool_calls:
+  - tool: get_weather
+    args_contains: {city: Mumbai}
+success_criteria:
+  final_answer_must_mention: [Mumbai]
+  must_not_call: [translate_text, calculator]
+difficulty: base
+notes: Tests correct tool selection.

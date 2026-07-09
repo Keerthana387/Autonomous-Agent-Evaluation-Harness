@@ -1,0 +1,9 @@
+id: task_011
+category: error_handling
+prompt: "Search the web for the capital of Japan."
+available_tools: [search_web]
+fault_config: {target_tool: search_web, fail_mode: malformed}
+expected_tool_calls:
+  - {tool: search_web}
+success_criteria: {should_handle_tool_failure: true}
+difficulty: base

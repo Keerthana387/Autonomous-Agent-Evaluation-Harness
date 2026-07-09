@@ -1,0 +1,10 @@
+id: task_003
+category: tool_selection
+prompt: "What is Apple's current stock price?"
+available_tools: [get_stock_price, get_stock_price_v2, get_weather]
+expected_tool_calls:
+  - tool: get_stock_price
+success_criteria:
+  must_not_call: [get_weather]
+difficulty: base
+notes: Near-duplicate tool confusion.

@@ -1,0 +1,11 @@
+id: task_013
+category: no_tool_needed
+prompt: |
+  Rewrite the following email to sound more professional:
+  "hey, i cant make it today. can we move the meeting to tomorrow?"
+available_tools: [send_email, translate_text, summarize_text]
+expected_tool_calls: []
+success_criteria:
+  must_not_call: [send_email, translate_text, summarize_text]
+  final_answer_should: [rewrite_text]
+difficulty: base

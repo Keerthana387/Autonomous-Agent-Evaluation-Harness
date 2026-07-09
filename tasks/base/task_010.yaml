@@ -1,0 +1,9 @@
+id: task_010
+category: error_handling
+prompt: "What is the weather in Delhi?"
+available_tools: [get_weather]
+fault_config: {target_tool: get_weather, fail_mode: timeout}
+expected_tool_calls:
+  - {tool: get_weather}
+success_criteria: {should_handle_tool_failure: true}
+difficulty: base

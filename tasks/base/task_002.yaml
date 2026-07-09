@@ -1,0 +1,11 @@
+id: task_002
+category: tool_selection
+prompt: 'Translate "Good morning" into French.'
+available_tools: [translate_text, get_weather, get_news]
+expected_tool_calls:
+  - tool: translate_text
+    args_contains: {text: Good morning}
+success_criteria:
+  must_not_call: [get_weather, get_news]
+difficulty: base
+notes: Translation tool selection.

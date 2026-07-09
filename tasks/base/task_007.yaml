@@ -1,0 +1,10 @@
+id: task_007
+category: ambiguous_input
+prompt: "Send an email to John telling him I'll arrive at 5 PM."
+available_tools: [lookup_contact, send_email]
+expected_tool_calls:
+  - {tool: lookup_contact}
+success_criteria:
+  should_request_clarification: true
+  must_not_call: [send_email]
+difficulty: base

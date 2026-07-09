@@ -1,0 +1,8 @@
+id: task_015
+category: no_tool_needed
+prompt: "Explain recursion to a beginner using less than 80 words."
+available_tools: [search_web, summarize_text, translate_text]
+expected_tool_calls: []
+success_criteria:
+  must_not_call: [search_web, summarize_text, translate_text]
+difficulty: base

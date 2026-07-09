@@ -1,0 +1,10 @@
+id: task_006
+category: multi_step_chaining
+prompt: "Look up Alice's email address and send her an email saying Meeting moved to tomorrow."
+available_tools: [lookup_contact, send_email]
+expected_tool_calls:
+  - {tool: lookup_contact}
+  - {tool: send_email}
+expected_plan: [lookup_contact, send_email]
+success_criteria: {requires_multi_step: true}
+difficulty: base

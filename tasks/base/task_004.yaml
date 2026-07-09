@@ -1,0 +1,10 @@
+id: task_004
+category: multi_step_chaining
+prompt: "Find the latest news about NVIDIA and summarize it in one sentence."
+available_tools: [get_news, summarize_text]
+expected_tool_calls:
+  - {tool: get_news}
+  - {tool: summarize_text}
+expected_plan: [get_news, summarize_text]
+success_criteria: {requires_multi_step: true}
+difficulty: base

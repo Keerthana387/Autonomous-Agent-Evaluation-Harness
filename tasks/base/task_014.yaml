@@ -1,0 +1,9 @@
+id: task_014
+category: no_tool_needed
+prompt: "Calculate the value of (25 × 18) + 40."
+available_tools: [calculator, search_web]
+expected_tool_calls: []
+success_criteria:
+  must_not_call: [calculator, search_web]
+  final_answer_must_mention: ["490"]
+difficulty: base
