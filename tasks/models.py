@@ -66,6 +66,10 @@ class Task(BaseModel):
 
     id: str
 
+    base_task_id: str | None = None
+
+    mutation_type: str | None = None
+
     category: TaskCategory
 
     prompt: str

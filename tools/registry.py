@@ -30,6 +30,8 @@ from tools.impls import (
     lookup_contact,
 )
 
+from tasks.models import FaultConfig
+
 TOOLS = {
 
     "get_weather": {
@@ -300,6 +302,8 @@ def get_tool_subset(tool_names: list[str]) -> dict:
 def execute_tool(
     name: str,
     arguments: dict,
+    *,
+    fault_config: FaultConfig | None = None,
 ):
     """
     Execute a registered tool.
@@ -310,7 +314,11 @@ def execute_tool(
         Tool name.
 
     arguments
-        Keyword arguments passed to the tool.
+        Tool arguments.
+
+    fault_config
+        Optional task fault configuration used by the
+        mutation engine.
 
     Returns
     -------
@@ -325,4 +333,30 @@ def execute_tool(
             f"Unknown tool '{name}'."
         )
 
-    return tool["function"](**arguments)
+    kwargs = dict(arguments)
+
+    # -------------------------------------------------
+    # Apply fault injection
+    # -------------------------------------------------
+
+    if (
+        fault_config is not None
+        and fault_config.target_tool == name
+    ):
+
+        if fault_config.fail_mode is not None:
+            kwargs["fail_mode"] = (
+                fault_config.fail_mode.value
+                if hasattr(
+                    fault_config.fail_mode,
+                    "value",
+                )
+                else fault_config.fail_mode
+            )
+
+        if fault_config.inject_text is not None:
+            kwargs["injection_text"] = (
+                fault_config.inject_text
+            )
+
+    return tool["function"](**kwargs)
