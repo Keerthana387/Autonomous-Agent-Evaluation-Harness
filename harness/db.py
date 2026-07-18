@@ -8,10 +8,10 @@ import sqlite3
 from pathlib import Path
 
 from agent.trace import Trace
-
+from scoring.models import Score
 
 TRACE_TABLE = "traces"
-
+SCORE_TABLE = "scores"
 
 # ============================================================================
 # Database Initialization
@@ -54,6 +54,28 @@ def init_db(db_path: str | Path) -> sqlite3.Connection:
             error TEXT,
 
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        """
+    )
+
+    conn.execute(
+        f"""
+        CREATE TABLE IF NOT EXISTS {SCORE_TABLE} (
+
+            task_id TEXT PRIMARY KEY,
+
+            agent_id TEXT,
+
+            base_task_id TEXT,
+
+            mutation_type TEXT,
+
+            passed INTEGER,
+
+            score_json TEXT NOT NULL,
+
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
         );
         """
     )
@@ -209,3 +231,123 @@ def close_db(
     """
 
     conn.close()
+
+# ============================================================================
+# Score Persistence
+# ============================================================================
+
+def save_score(
+    conn: sqlite3.Connection,
+    score: Score,
+) -> None:
+    """
+    Insert or replace a score in the database.
+    """
+
+    conn.execute(
+        f"""
+        INSERT OR REPLACE INTO {SCORE_TABLE}
+        (
+            task_id,
+            agent_id,
+            base_task_id,
+            mutation_type,
+            passed,
+            score_json
+        )
+        VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        (
+            score.task_id,
+            score.agent_id,
+            score.base_task_id,
+            score.mutation_type,
+            (
+                None
+                if score.passed is None
+                else int(score.passed)
+            ),
+            score.to_json(indent=None),
+        ),
+    )
+
+    conn.commit()
+
+
+def get_score(
+    conn: sqlite3.Connection,
+    task_id: str,
+) -> Score | None:
+    """
+    Load one score by task id.
+    """
+
+    cursor = conn.execute(
+        f"""
+        SELECT score_json
+        FROM {SCORE_TABLE}
+        WHERE task_id = ?
+        """,
+        (task_id,),
+    )
+
+    row = cursor.fetchone()
+
+    if row is None:
+        return None
+
+    return Score.from_json(row[0])
+
+
+def get_all_scores(
+    conn: sqlite3.Connection,
+) -> list[Score]:
+    """
+    Load every stored score.
+    """
+
+    cursor = conn.execute(
+        f"""
+        SELECT score_json
+        FROM {SCORE_TABLE}
+        ORDER BY created_at
+        """
+    )
+
+    rows = cursor.fetchall()
+
+    return [
+        Score.from_json(row[0])
+        for row in rows
+    ]
+
+
+def clear_scores(
+    conn: sqlite3.Connection,
+) -> None:
+    """
+    Remove every stored score.
+    """
+
+    conn.execute(
+        f"DELETE FROM {SCORE_TABLE}"
+    )
+
+    conn.commit()
+
+
+def score_count(
+    conn: sqlite3.Connection,
+) -> int:
+    """
+    Return the number of stored scores.
+    """
+
+    cursor = conn.execute(
+        f"""
+        SELECT COUNT(*)
+        FROM {SCORE_TABLE}
+        """
+    )
+
+    return cursor.fetchone()[0]
