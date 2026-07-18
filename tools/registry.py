@@ -273,12 +273,56 @@ def list_tools():
     return list(TOOLS.keys())
 
 
-def get_tool_subset(tool_names: list[str]):
+def get_tool_subset(tool_names: list[str]) -> dict:
     """
-    Return a dictionary containing only the requested tools.
+    Return a subset of the tool registry.
+
+    Raises
+    ------
+    ValueError
+        If any requested tool does not exist.
     """
-    return {
-        name: TOOLS[name]
-        for name in tool_names
-        if name in TOOLS
-    }
+
+    subset = {}
+
+    for name in tool_names:
+
+        if name not in TOOLS:
+            raise ValueError(
+                f"Unknown tool '{name}'. "
+                f"Available tools: {', '.join(TOOLS.keys())}"
+            )
+
+        subset[name] = TOOLS[name]
+
+    return subset
+
+def execute_tool(
+    name: str,
+    arguments: dict,
+):
+    """
+    Execute a registered tool.
+
+    Parameters
+    ----------
+    name
+        Tool name.
+
+    arguments
+        Keyword arguments passed to the tool.
+
+    Returns
+    -------
+    Any
+        Tool output.
+    """
+
+    tool = get_tool(name)
+
+    if tool is None:
+        raise ValueError(
+            f"Unknown tool '{name}'."
+        )
+
+    return tool["function"](**arguments)
