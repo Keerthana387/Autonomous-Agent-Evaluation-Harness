@@ -349,7 +349,7 @@ class Trace:
     def to_json(
         self,
         *,
-        indent: int = 2,
+        indent: int | None = 2,
     ) -> str:
         """
         Serialize the trace to a JSON string.
