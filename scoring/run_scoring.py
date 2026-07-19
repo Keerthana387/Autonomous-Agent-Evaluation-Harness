@@ -4,18 +4,22 @@ Run deterministic scoring on every stored benchmark trace.
 
 from __future__ import annotations
 
+import argparse
+import logging
 import sqlite3
 from pathlib import Path
+from typing import Iterable
 
 from harness.db import (
-    init_db,
     close_db,
     get_all_traces,
+    init_db,
     save_score,
 )
-
 from scoring.rules import score_trace
 from tasks.loader import load_all_tasks
+
+logger = logging.getLogger(__name__)
 
 
 # ============================================================================
@@ -25,10 +29,18 @@ from tasks.loader import load_all_tasks
 
 def score_database(
     db_path: str | Path,
-    task_dir: str | Path,
+    task_dirs: Iterable[str | Path],
 ) -> int:
     """
     Score every stored trace.
+
+    Parameters
+    ----------
+    db_path
+        SQLite database.
+
+    task_dirs
+        One or more directories containing benchmark task definitions.
 
     Returns
     -------
@@ -41,7 +53,7 @@ def score_database(
     try:
         return score_connection(
             conn,
-            task_dir,
+            task_dirs,
         )
 
     finally:
@@ -50,7 +62,7 @@ def score_database(
 
 def score_connection(
     conn: sqlite3.Connection,
-    task_dir: str | Path,
+    task_dirs: Iterable[str | Path],
 ) -> int:
     """
     Score every trace already present in the database.
@@ -58,10 +70,16 @@ def score_connection(
     Existing scores are overwritten.
     """
 
-    tasks = {
-        task.id: task
-        for task in load_all_tasks(task_dir)
-    }
+    tasks = {}
+
+    for task_dir in task_dirs:
+
+        tasks.update(
+            {
+                task.id: task
+                for task in load_all_tasks(task_dir)
+            }
+        )
 
     traces = get_all_traces(conn)
 
@@ -72,14 +90,12 @@ def score_connection(
         task = tasks.get(trace.task_id)
 
         if task is None:
-            import logging
-
-            logger = logging.getLogger(__name__)
 
             logger.warning(
-                "No task found for trace %s. Skipping.",
+                "No task found for trace '%s'. Skipping.",
                 trace.task_id,
             )
+
             continue
 
         score = score_trace(
@@ -101,12 +117,11 @@ def score_connection(
 # CLI
 # ============================================================================
 
+
 if __name__ == "__main__":
 
-    import argparse
-
     parser = argparse.ArgumentParser(
-        description="Run deterministic benchmark scoring."
+        description="Run deterministic benchmark scoring.",
     )
 
     parser.add_argument(
@@ -117,15 +132,19 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "--tasks",
-        default="tasks/generated",
-        help="Directory containing benchmark tasks.",
+        nargs="+",
+        default=[
+            "tasks/base",
+            "tasks/generated",
+        ],
+        help="One or more directories containing benchmark tasks.",
     )
 
     args = parser.parse_args()
 
     count = score_database(
         db_path=args.db,
-        task_dir=args.tasks,
+        task_dirs=args.tasks,
     )
 
     print(f"Scored {count} traces.")

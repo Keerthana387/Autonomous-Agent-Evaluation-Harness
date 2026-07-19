@@ -14,12 +14,10 @@ from typing import Any
 
 
 class Role(Enum):
-    """
-    Supported conversation roles.
-    """
-
+    SYSTEM = "system"
     USER = "user"
     ASSISTANT = "assistant"
+    TOOL = "tool"   # optional but recommended
 
 
 class FinishReason(Enum):

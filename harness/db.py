@@ -6,12 +6,14 @@ from __future__ import annotations
 
 import sqlite3
 from pathlib import Path
+from datetime import datetime
 
 from agent.trace import Trace
 from scoring.models import Score
 
 TRACE_TABLE = "traces"
 SCORE_TABLE = "scores"
+DATABASE_DIR = Path("databases")
 
 # ============================================================================
 # Database Initialization
@@ -351,3 +353,124 @@ def score_count(
     )
 
     return cursor.fetchone()[0]
+
+def ensure_database_dir() -> Path:
+    """
+    Ensure the databases directory exists.
+    """
+
+    DATABASE_DIR.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    return DATABASE_DIR
+
+def list_databases() -> list[Path]:
+    """
+    Return every database ordered by newest first.
+    """
+
+    directory = ensure_database_dir()
+
+    return sorted(
+        directory.glob("*.db"),
+        key=lambda p: p.stat().st_mtime,
+        reverse=True,
+    )
+
+def default_database_name() -> str:
+    """
+    Generate the default timestamp-based database name.
+    """
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    return f"benchmark_{timestamp}"
+
+def sanitize_database_name(
+    name: str,
+) -> str:
+    """
+    Convert a user-provided name into a valid filename.
+    """
+
+    name = name.strip()
+
+    name = name.replace(" ", "_")
+
+    invalid = '<>:"/\\|?*'
+
+    for char in invalid:
+        name = name.replace(char, "")
+
+    if not name.endswith(".db"):
+        name += ".db"
+
+    return name
+
+def database_exists(
+    name: str | Path,
+) -> bool:
+    """
+    Return True if the database already exists.
+    """
+
+    path = DATABASE_DIR / Path(name).name
+
+    return path.exists()
+
+def create_database(
+    name: str,
+) -> Path:
+    """
+    Create and initialize a new benchmark database.
+    """
+
+    ensure_database_dir()
+
+    filename = sanitize_database_name(name)
+
+    path = DATABASE_DIR / filename
+
+    if path.exists():
+        raise FileExistsError(
+            f"Database '{filename}' already exists."
+        )
+
+    conn = init_db(path)
+
+    conn.close()
+
+    return path
+
+def latest_database() -> Path | None:
+    """
+    Return the newest database.
+    """
+
+    databases = list_databases()
+
+    if not databases:
+        return None
+
+    return databases[0]
+
+def get_database_names() -> list[str]:
+    """
+    Return all database filenames ordered by newest first.
+    """
+
+    return [
+        db.name
+        for db in list_databases()
+    ]
+
+def get_database_path(
+    name: str,
+) -> Path:
+    """
+    Return the full path of a database.
+    """
+
+    return ensure_database_dir() / name

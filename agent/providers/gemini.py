@@ -16,6 +16,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 from typing import Any
+import time
 
 from dotenv import load_dotenv
 from google import genai
@@ -204,6 +205,7 @@ class GeminiLLM(BaseLLM):
             previous iteration.
         """
 
+        system_instruction = None
         contents: list[types.Content] = []
 
         # --------------------------------------------------------------
@@ -212,6 +214,10 @@ class GeminiLLM(BaseLLM):
 
         for turn in conversation:
 
+            if turn.role == Role.SYSTEM:
+                system_instruction = turn.content
+                continue
+
             role = "user" if turn.role == Role.USER else "model"
 
             contents.append(
@@ -219,7 +225,7 @@ class GeminiLLM(BaseLLM):
                     role=role,
                     parts=[
                         types.Part.from_text(
-                            text=turn.content
+                            text=turn.content,
                         )
                     ],
                 )
@@ -251,10 +257,12 @@ class GeminiLLM(BaseLLM):
         # Generate
         # --------------------------------------------------------------
 
+        time.sleep(4.3)
         response = self._client.models.generate_content(
             model=self._model,
             contents=contents,
             config=types.GenerateContentConfig(
+                system_instruction=system_instruction,
                 tools=self._tools,
                 automatic_function_calling=types.AutomaticFunctionCallingConfig(
                     disable=True,

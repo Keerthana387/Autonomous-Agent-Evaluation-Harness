@@ -141,7 +141,7 @@ def test_score_connection(monkeypatch, tmp_path):
 
     scored = score_connection(
         conn,
-        Path("unused"),
+        [Path("unused")],
     )
 
     assert scored == 1
@@ -172,7 +172,7 @@ def test_missing_task(monkeypatch, tmp_path):
 
     scored = score_connection(
         conn,
-        Path("unused"),
+        [Path("unused")],
     )
 
     assert scored == 0

@@ -22,14 +22,14 @@ def run_suite(
     conn,
     *,
     provider: str = "gemini",
-) -> None:
+) -> int:
     """
     Execute every task in a directory.
 
     Any unexpected failure while executing one task is recorded as a failed
     trace, allowing the remainder of the benchmark to continue.
     """
-
+    count =0
     tasks = load_all_tasks(task_dir)
 
     for task in tasks:
@@ -55,6 +55,10 @@ def run_suite(
             conn,
             trace,
         )
+        count += 1
+
+    return count
+
 
 
 # ============================================================================
@@ -66,7 +70,7 @@ def run_all(
     *,
     db_path: str | Path = "benchmark.db",
     provider: str = "gemini",
-) -> None:
+) -> int:
     """
     Run the complete benchmark.
 
@@ -76,14 +80,14 @@ def run_all(
     conn = init_db(db_path)
 
     try:
-
-        run_suite(
+        total = 0
+        total += run_suite(
             "tasks/base",
             conn,
             provider=provider,
         )
 
-        run_suite(
+        total += run_suite(
             "tasks/generated",
             conn,
             provider=provider,
@@ -93,6 +97,7 @@ def run_all(
 
         close_db(conn)
 
+    return total
 
 # ============================================================================
 # Entry Point
